@@ -5,10 +5,16 @@ package ecologylab.semantics.sensing;
 
 import com.drew.metadata.exif.GpsDirectory;
 
+import ecologylab.generic.Continuation;
 import ecologylab.generic.Debug;
+import ecologylab.net.ParsedURL;
 import ecologylab.semantics.collecting.SemanticsGlobalScope;
 import ecologylab.semantics.generated.library.gps.GeoLocation;
+import ecologylab.semantics.generated.library.search.YahooResult;
+import ecologylab.semantics.generated.library.search.YahooResultSet;
 import ecologylab.semantics.metadata.Metadata;
+import ecologylab.semantics.metadata.builtins.Document;
+import ecologylab.semantics.metadata.builtins.DocumentClosure;
 import ecologylab.serialization.types.scalar.DoubleType;
 
 /**
@@ -96,7 +102,7 @@ public class GpsFeatures extends Debug
 		return (gpsLatitudeString != null) ? new GpsFeatures(gpsDir, gpsLatitudeString) : null;
 	}
 	
-	Metadata extractMixin(SemanticsGlobalScope semanticsScope)
+	GeoLocation extractMixin(SemanticsGlobalScope semanticsScope)
 	{
 		GeoLocation result					= new GeoLocation();
 		result.setLongitude(longitude);
@@ -105,18 +111,36 @@ public class GpsFeatures extends Debug
 
 		return result;
 	}
-	public static Metadata extractMixin(com.drew.metadata.Directory gpsDir, SemanticsGlobalScope semanticsScope)
+	//TODO Reverse geo-code, to discover place!
+	// http://developer.yahoo.com/geo/placefinder/
+	// http://where.yahooapis.com/geocode?q=38.898717,-77.035974&gflags=R&appid=[yourappidhere]
+	public static final String	YAHOO_REVERSE_GEO	= "http://where.yahooapis.com/geocode?gflags=R&q=";
+	
+	public static Metadata extractMixin(com.drew.metadata.Directory gpsDir, final SemanticsGlobalScope semanticsScope)
 	{
-		GpsFeatures gpsFeatures	= extract(gpsDir);
-		Metadata result					= null;
-		if (gpsFeatures != null)
+		GpsFeatures gpsFeatures				= extract(gpsDir);
+		if (gpsFeatures == null)
+			return null;
+		
+		final GeoLocation result		= gpsFeatures.extractMixin(semanticsScope);	
+
+		ParsedURL reverseGeo	= ParsedURL.getAbsolute(YAHOO_REVERSE_GEO + result.getLongitude()+","+result.getLatitude());
+
+		Document reverseGeoDoc			= semanticsScope.getOrConstructDocument(reverseGeo);
+		DocumentClosure geoClosure	= reverseGeoDoc.getOrConstructClosure();
+		geoClosure.addContinuation(new Continuation<DocumentClosure>()
 		{
-			result								= gpsFeatures.extractMixin(semanticsScope);	
-			
-			//TODO Reverse geo-code, to discover place!
-			// http://developer.yahoo.com/geo/placefinder/
-			// http://where.yahooapis.com/geocode?q=38.898717,-77.035974&gflags=R&appid=[yourappidhere]
-		}
+			@Override
+			public void callback(DocumentClosure o)
+			{
+				// TODO Auto-generated method stub
+				YahooResultSet resultSet	= (YahooResultSet) o.getDocument();
+				YahooResult		 yahooResult= resultSet.getResults().get(0);
+				println(yahooResult.getCountry() + " > " + yahooResult.getCity());
+				int i = 24;
+			}
+		});
+		geoClosure.queueDownload();
 		return result;
 	}
 	
