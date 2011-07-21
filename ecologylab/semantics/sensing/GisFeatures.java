@@ -9,7 +9,8 @@ import ecologylab.generic.Continuation;
 import ecologylab.generic.Debug;
 import ecologylab.net.ParsedURL;
 import ecologylab.semantics.collecting.SemanticsGlobalScope;
-import ecologylab.semantics.generated.library.gps.GeoLocation;
+import ecologylab.semantics.generated.library.gps.GisLocation;
+import ecologylab.semantics.generated.library.gps.PostalAddress;
 import ecologylab.semantics.generated.library.search.YahooResult;
 import ecologylab.semantics.generated.library.search.YahooResultSet;
 import ecologylab.semantics.metadata.Metadata;
@@ -18,10 +19,12 @@ import ecologylab.semantics.metadata.builtins.DocumentClosure;
 import ecologylab.serialization.types.scalar.DoubleType;
 
 /**
- * @author andruid
+ * Tools for extracting GIS data from EXIF+ headrs from image files, 
+ * and using these to populate appropriate S.IM.PL Metadata.
  * 
+ * @author andruid
  */
-public class GpsFeatures extends Debug
+public class GisFeatures extends Debug
 {
 	public static final MetadataExifFeature	GPS_LATITUDE_FEATURE			= new MetadataExifFeature(
 																																				"latitude",
@@ -52,7 +55,7 @@ public class GpsFeatures extends Debug
 
 
 
-	GpsFeatures(com.drew.metadata.Directory gpsDir, String gpsLatitudeString)
+	GisFeatures(com.drew.metadata.Directory gpsDir, String gpsLatitudeString)
 	{
 		double converted 					= convertToDegrees(gpsLatitudeString);
 		
@@ -96,15 +99,15 @@ public class GpsFeatures extends Debug
 	 * @param gpsDir
 	 * @return		An instance of this, or null.
 	 */
-	public static GpsFeatures extract(com.drew.metadata.Directory gpsDir)
+	public static GisFeatures extract(com.drew.metadata.Directory gpsDir)
 	{
 		String gpsLatitudeString = GPS_LATITUDE_FEATURE.getStringValue(gpsDir);
-		return (gpsLatitudeString != null) ? new GpsFeatures(gpsDir, gpsLatitudeString) : null;
+		return (gpsLatitudeString != null) ? new GisFeatures(gpsDir, gpsLatitudeString) : null;
 	}
 	
-	GeoLocation extractMixin(SemanticsGlobalScope semanticsScope)
+	GisLocation extractMixin(SemanticsGlobalScope semanticsScope)
 	{
-		GeoLocation result					= new GeoLocation();
+		GisLocation result					= new GisLocation();
 		result.setLongitude(longitude);
 		result.setLatitude(latitude);
 		result.setAltitude(altitude);
@@ -116,14 +119,15 @@ public class GpsFeatures extends Debug
 	// http://where.yahooapis.com/geocode?q=38.898717,-77.035974&gflags=R&appid=[yourappidhere]
 	public static final String	YAHOO_REVERSE_GEO	= "http://where.yahooapis.com/geocode?gflags=R&q=";
 	
-	public static Metadata extractMixin(com.drew.metadata.Directory gpsDir, final SemanticsGlobalScope semanticsScope)
+	public static Metadata extractMixin(com.drew.metadata.Directory gpsDir, final SemanticsGlobalScope semanticsScope, final Metadata parentMetadata)
 	{
-		GpsFeatures gpsFeatures				= extract(gpsDir);
+		GisFeatures gpsFeatures				= extract(gpsDir);
 		if (gpsFeatures == null)
 			return null;
 		
-		final GeoLocation result		= gpsFeatures.extractMixin(semanticsScope);	
-
+		final GisLocation result		= gpsFeatures.extractMixin(semanticsScope);	
+		parentMetadata.addMixin(result);
+		
 		ParsedURL reverseGeo	= ParsedURL.getAbsolute(YAHOO_REVERSE_GEO + result.getLongitude()+","+result.getLatitude());
 
 		Document reverseGeoDoc			= semanticsScope.getOrConstructDocument(reverseGeo);
@@ -134,10 +138,17 @@ public class GpsFeatures extends Debug
 			public void callback(DocumentClosure o)
 			{
 				// TODO Auto-generated method stub
-				YahooResultSet resultSet	= (YahooResultSet) o.getDocument();
-				YahooResult		 yahooResult= resultSet.getResults().get(0);
+				YahooResultSet resultSet		= (YahooResultSet) o.getDocument();
+				YahooResult		 yahooResult	= resultSet.getResults().get(0);
 				println(yahooResult.getCountry() + " > " + yahooResult.getCity());
-				int i = 24;
+				PostalAddress postalAddress	= new PostalAddress();
+				postalAddress.setStreetAddress(yahooResult.getLine1());
+				postalAddress.setLocality(yahooResult.getCity());
+				postalAddress.setRegion(yahooResult.getState());
+				postalAddress.setPostalCode(yahooResult.getPostal());
+				postalAddress.setCounty(yahooResult.getCounty());
+				postalAddress.setCountry(yahooResult.getCountry());
+				parentMetadata.addMixin(postalAddress);
 			}
 		});
 		geoClosure.queueDownload();

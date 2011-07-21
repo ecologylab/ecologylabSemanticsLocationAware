@@ -4,32 +4,43 @@
 package ecologylab.semantics.sensing;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.metadata.builtins.GeoLocation;
+import ecologylab.semantics.generated.library.gps.GisLocation;
 import ecologylab.sensor.location.EarthData;
 
 /**
- * Methods for computing on GeoLocation and other location-based stuff.
+ * Methods for computing on GisLocation and other location-based stuff.
  * 
  * @author andruid
  */
-public class GeoTools extends Debug implements EarthData
+public class GisTools extends Debug implements EarthData
 {
 
 	/**
 	 * 
 	 */
-	public GeoTools()
+	public GisTools()
 	{
 	}
+
+	public GisLocation constructGisLocation(double lat, double lon, double alt)
+	{
+		GisLocation result	= new GisLocation();
+		result.setLatitude(lat);
+		result.setLongitude(lon);
+		result.setAltitude(alt);
+		
+		return result;
+	}
+
 
 	/**
 	 * Get the set of coordinates, serialized for use in KML / Google Earth.
 	 * 
 	 * @return
 	 */
-	public static String getKMLCommaDelimitedString(GeoLocation geoLocation)
+	public static String getKMLCommaDelimitedString(GisLocation GisLocation)
 	{
-		return geoLocation.getLongitude() + "," + geoLocation.getLatitude() + "," + geoLocation.getAltitude();
+		return GisLocation.getLongitude() + "," + GisLocation.getLatitude() + "," + GisLocation.getAltitude();
 	}
 
 	/**
@@ -37,9 +48,9 @@ public class GeoTools extends Debug implements EarthData
 	 * @return positive if this is farther north than that, negative if that is more north; 0 if they
 	 *         lie on exactly the same parallel.
 	 */
-	public static double compareNS(GeoLocation geoLocation, GeoLocation that)
+	public static double compareNS(GisLocation GisLocation, GisLocation that)
 	{
-		return geoLocation.getLatitude() - that.getLatitude();
+		return GisLocation.getLatitude() - that.getLatitude();
 	}
 
 	/**
@@ -48,9 +59,9 @@ public class GeoTools extends Debug implements EarthData
 	 *         this is farther east than that, -1 if this is farther west, 0 if the two points lie on
 	 *         the same arc, 180/-180 if they are opposite.
 	 */
-	public static double compareEW(GeoLocation geoLocation, GeoLocation that)
+	public static double compareEW(GisLocation GisLocation, GisLocation that)
 	{
-		double diff = geoLocation.getLongitude() - that.getLongitude();
+		double diff = GisLocation.getLongitude() - that.getLongitude();
 
 		if (diff > 180)
 		{
@@ -77,9 +88,9 @@ public class GeoTools extends Debug implements EarthData
 	 * @param other
 	 * @return great-circle distance between this and other, in meters.
 	 */
-	public static double distanceTo(GeoLocation geoLocation, GeoLocation other)
+	public static double distanceTo(GisLocation GisLocation, GisLocation other)
 	{
-		return distanceTo(geoLocation, other.getLatitude(), other.getLongitude());
+		return distanceTo(GisLocation, other.getLatitude(), other.getLongitude());
 	}
 
 	/**
@@ -94,13 +105,13 @@ public class GeoTools extends Debug implements EarthData
 	 * @param otherLon
 	 * @return great-circle distance between this and other, in meters.
 	 */
-	public static double distanceTo(GeoLocation geoLocation, double otherLat, double otherLon)
+	public static double distanceTo(GisLocation GisLocation, double otherLat, double otherLon)
 	{
-		double deltaLat = Math.toRadians(otherLat - geoLocation.getLatitude());
-		double deltaLon = Math.toRadians(otherLon - geoLocation.getLongitude());
+		double deltaLat = Math.toRadians(otherLat - GisLocation.getLatitude());
+		double deltaLon = Math.toRadians(otherLon - GisLocation.getLongitude());
 
 		double a = (Math.sin(deltaLat / 2.0) * Math.sin(deltaLat / 2.0))
-				+ (Math.cos(Math.toRadians(geoLocation.getLatitude())) * Math.cos(Math.toRadians(otherLat))
+				+ (Math.cos(Math.toRadians(GisLocation.getLatitude())) * Math.cos(Math.toRadians(otherLat))
 						* Math.sin(deltaLon / 2.0) * Math.sin(deltaLon / 2.0));
 		double c = 2.0 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a));
 
