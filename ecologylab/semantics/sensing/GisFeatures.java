@@ -141,7 +141,7 @@ public class GisFeatures extends Debug
 				YahooResultSet resultSet		= (YahooResultSet) o.getDocument();
 				YahooResult		 yahooResult	= resultSet.getResults().get(0);
 				println(yahooResult.getCountry() + " > " + yahooResult.getCity());
-				PostalAddress postalAddress	= new PostalAddress();
+				PostalAddress postalAddress	= new PostalAddress(semanticsScope.getMetaMetadataRepository().getByClass(PostalAddress.class));
 				postalAddress.setStreetAddress(yahooResult.getLine1());
 				postalAddress.setLocality(yahooResult.getCity());
 				postalAddress.setRegion(yahooResult.getState());
