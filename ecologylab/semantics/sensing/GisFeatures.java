@@ -11,7 +11,8 @@ import ecologylab.net.ParsedURL;
 import ecologylab.semantics.collecting.SemanticsGlobalScope;
 import ecologylab.semantics.generated.library.gps.GisLocation;
 import ecologylab.semantics.generated.library.gps.PostalAddress;
-import ecologylab.semantics.generated.library.search.YahooResult;
+import ecologylab.semantics.generated.library.search.MmdInlineYahooGeoCodeResultInResultsInYahooGeoCode;
+import ecologylab.semantics.generated.library.search.MmdInlineYahooResultInResultsInYahooResultSet;
 import ecologylab.semantics.generated.library.search.YahooResultSet;
 import ecologylab.semantics.metadata.Metadata;
 import ecologylab.semantics.metadata.builtins.Document;
@@ -26,30 +27,24 @@ import ecologylab.serialization.types.scalar.DoubleType;
  */
 public class GisFeatures extends Debug
 {
-	public static final MetadataExifFeature	GPS_LATITUDE_FEATURE			= new MetadataExifFeature(
-																																				"latitude",
-																																				GpsDirectory.TAG_GPS_LATITUDE);
+	public static final MetadataExifFeature	GPS_LATITUDE_FEATURE			= new MetadataExifFeature( "latitude", GpsDirectory.TAG_GPS_LATITUDE);
+	
+ public static final MetadataExifFeature	GPS_ALTITUDE_FEATURE			= new MetadataExifFeature( "altitude", GpsDirectory.TAG_GPS_ALTITUDE);
 
-	public static final MetadataExifFeature	GPS_ALTITUDE_FEATURE			= new MetadataExifFeature(
-																																				"altitude",
-																																				GpsDirectory.TAG_GPS_ALTITUDE);
+	public static final MetadataExifFeature	GPS_LATITUDE_REF_FEATURE	= new MetadataExifFeature( "latitude_ref", GpsDirectory.TAG_GPS_LATITUDE_REF);
 
-	public static final MetadataExifFeature	GPS_LATITUDE_REF_FEATURE	= new MetadataExifFeature(
-																																				"latitude_ref",
-																																				GpsDirectory.TAG_GPS_LATITUDE_REF);
+	public static final MetadataExifFeature	GPS_LONGITUDE_REF_FEATURE	= new MetadataExifFeature( "longitude_ref", GpsDirectory.TAG_GPS_LONGITUDE_REF);
 
-	public static final MetadataExifFeature	GPS_LONGITUDE_REF_FEATURE	= new MetadataExifFeature(
-																																				"longitude_ref",
-																																				GpsDirectory.TAG_GPS_LONGITUDE_REF);
+	public static final MetadataExifFeature	GPS_LONGITUDE_FEATURE			= new MetadataExifFeature( "longitude", GpsDirectory.TAG_GPS_LONGITUDE);
 
-	public static final MetadataExifFeature	GPS_LONGITUDE_FEATURE			= new MetadataExifFeature(
-																																				"longitude",
-																																				GpsDirectory.TAG_GPS_LONGITUDE);
-
-	public static final MetadataExifFeature	GPS_METADATA_FEATURES[]		=
-																																		{ GPS_LATITUDE_FEATURE,
-			GPS_LONGITUDE_FEATURE, GPS_LONGITUDE_REF_FEATURE, GPS_LATITUDE_REF_FEATURE,
-			GPS_ALTITUDE_FEATURE, new MetadataExifFeature("satellites", GpsDirectory.TAG_GPS_SATELLITES), };
+	public static final MetadataExifFeature	GPS_METADATA_FEATURES[]		= {
+																																		GPS_LATITUDE_FEATURE,
+																																		GPS_LONGITUDE_FEATURE,
+																																		GPS_LONGITUDE_REF_FEATURE,
+																																		GPS_LATITUDE_REF_FEATURE,
+																																		GPS_ALTITUDE_FEATURE,
+																																		new MetadataExifFeature("satellites", GpsDirectory.TAG_GPS_SATELLITES),
+																																		};
 
 	double																	latitude, longitude, altitude;
 
@@ -121,7 +116,7 @@ public class GisFeatures extends Debug
 	
 	public static Metadata extractMixin(com.drew.metadata.Directory gpsDir, final SemanticsGlobalScope semanticsScope, final Metadata parentMetadata)
 	{
-		GisFeatures gpsFeatures				= extract(gpsDir);
+		final GisFeatures gpsFeatures				= extract(gpsDir);
 		if (gpsFeatures == null)
 			return null;
 		
@@ -139,16 +134,24 @@ public class GisFeatures extends Debug
 			{
 				// TODO Auto-generated method stub
 				YahooResultSet resultSet		= (YahooResultSet) o.getDocument();
-				YahooResult		 yahooResult	= resultSet.getResults().get(0);
-				println(yahooResult.getCountry() + " > " + yahooResult.getCity());
-				PostalAddress postalAddress	= new PostalAddress(semanticsScope.getMetaMetadataRepository().getByClass(PostalAddress.class));
-				postalAddress.setStreetAddress(yahooResult.getLine1());
-				postalAddress.setLocality(yahooResult.getCity());
-				postalAddress.setRegion(yahooResult.getState());
-				postalAddress.setPostalCode(yahooResult.getPostal());
-				postalAddress.setCounty(yahooResult.getCounty());
-				postalAddress.setCountry(yahooResult.getCountry());
-				parentMetadata.addMixin(postalAddress);
+				MmdInlineYahooResultInResultsInYahooResultSet yahooResult = resultSet.getResults().get(0);
+				if (yahooResult instanceof MmdInlineYahooGeoCodeResultInResultsInYahooGeoCode)
+				{
+					MmdInlineYahooGeoCodeResultInResultsInYahooGeoCode yahooGeoResult = (MmdInlineYahooGeoCodeResultInResultsInYahooGeoCode) yahooResult;
+					println(yahooGeoResult.getCountry() + " > " + yahooGeoResult.getCity());
+					PostalAddress postalAddress	= new PostalAddress(semanticsScope.getMetaMetadataRepository().getByClass(PostalAddress.class));
+					postalAddress.setStreetAddress(yahooGeoResult.getLine1());
+					postalAddress.setLocality(yahooGeoResult.getCity());
+					postalAddress.setRegion(yahooGeoResult.getState());
+					postalAddress.setPostalCode(yahooGeoResult.getPostal());
+					postalAddress.setCounty(yahooGeoResult.getCounty());
+					postalAddress.setCountry(yahooGeoResult.getCountry());
+					parentMetadata.addMixin(postalAddress);
+				}
+				else
+				{
+					gpsFeatures.warning("type of results is not YahooGeoResult! " + yahooResult);
+				}
 			}
 		});
 		geoClosure.queueDownload();
