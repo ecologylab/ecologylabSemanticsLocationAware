@@ -11,8 +11,9 @@ import ecologylab.net.ParsedURL;
 import ecologylab.semantics.collecting.SemanticsGlobalScope;
 import ecologylab.semantics.generated.library.gps.GisLocation;
 import ecologylab.semantics.generated.library.gps.PostalAddress;
-import ecologylab.semantics.generated.library.search.MmdInlineYahooGeoCodeResultInResultsInYahooGeoCode;
-import ecologylab.semantics.generated.library.search.MmdInlineYahooResultInResultsInYahooResultSet;
+import ecologylab.semantics.generated.library.search.YahooGeoCode;
+import ecologylab.semantics.generated.library.search.YahooGeoCodeResult;
+import ecologylab.semantics.generated.library.search.YahooResult;
 import ecologylab.semantics.generated.library.search.YahooResultSet;
 import ecologylab.semantics.metadata.Metadata;
 import ecologylab.semantics.metadata.builtins.Document;
@@ -134,12 +135,12 @@ public class GisFeatures extends Debug
 			{
 				// TODO Auto-generated method stub
 				YahooResultSet resultSet		= (YahooResultSet) o.getDocument();
-				MmdInlineYahooResultInResultsInYahooResultSet yahooResult = resultSet.getResults().get(0);
-				if (yahooResult instanceof MmdInlineYahooGeoCodeResultInResultsInYahooGeoCode)
+				YahooResult yahooResult = resultSet.getResults().get(0);
+				if (yahooResult instanceof YahooGeoCodeResult)
 				{
-					MmdInlineYahooGeoCodeResultInResultsInYahooGeoCode yahooGeoResult = (MmdInlineYahooGeoCodeResultInResultsInYahooGeoCode) yahooResult;
+					YahooGeoCodeResult yahooGeoResult = (YahooGeoCodeResult) yahooResult;
 					println(yahooGeoResult.getCountry() + " > " + yahooGeoResult.getCity());
-					PostalAddress postalAddress	= new PostalAddress(semanticsScope.getMetaMetadataRepository().getByClass(PostalAddress.class));
+					PostalAddress postalAddress	= new PostalAddress(semanticsScope.getMetaMetadataRepository().getMMByClass(PostalAddress.class));
 					postalAddress.setStreetAddress(yahooGeoResult.getLine1());
 					postalAddress.setLocality(yahooGeoResult.getCity());
 					postalAddress.setRegion(yahooGeoResult.getState());
