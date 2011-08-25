@@ -101,15 +101,26 @@ public class GisFeatures extends Debug
 		return (gpsLatitudeString != null) ? new GisFeatures(gpsDir, gpsLatitudeString) : null;
 	}
 	
-	GisLocation extractMixin(SemanticsGlobalScope semanticsScope)
+	public static boolean containsGisMixin(final Metadata parent)
 	{
-		GisLocation result					= new GisLocation();
-		result.setLongitude(longitude);
-		result.setLatitude(latitude);
-		result.setAltitude(altitude);
+		return parent.containsMixin(GisLocation.class);
+	}
+
+	GisLocation extractMixin(Metadata parentMetadata)
+	{
+		GisLocation result					= containsGisMixin(parentMetadata) ? parentMetadata.getMixin(GisLocation.class) : new GisLocation();
+		setMixinFeatures(result);
 
 		return result;
 	}
+
+	private void setMixinFeatures(GisLocation result)
+	{
+		result.setLongitude(longitude);
+		result.setLatitude(latitude);
+		result.setAltitude(altitude);
+	}
+	
 	//TODO Reverse geo-code, to discover place!
 	// http://developer.yahoo.com/geo/placefinder/
 	// http://where.yahooapis.com/geocode?q=38.898717,-77.035974&gflags=R&appid=[yourappidhere]
@@ -121,7 +132,7 @@ public class GisFeatures extends Debug
 		if (gpsFeatures == null)
 			return null;
 		
-		final GisLocation result		= gpsFeatures.extractMixin(semanticsScope);	
+		final GisLocation result		= gpsFeatures.extractMixin(parentMetadata);	
 		parentMetadata.addMixin(result);
 		
 		ParsedURL reverseGeo	= ParsedURL.getAbsolute(YAHOO_REVERSE_GEO + result.getLongitude()+","+result.getLatitude());
