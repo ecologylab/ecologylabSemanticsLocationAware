@@ -10,9 +10,7 @@ import com.drew.metadata.MetadataException;
 import ecologylab.semantics.metadata.Metadata;
 import ecologylab.semantics.metadata.MetadataFieldDescriptor;
 import ecologylab.semantics.metadata.scalar.MetadataDate;
-import ecologylab.semantics.metadata.scalar.MetadataFloat;
 import ecologylab.semantics.metadata.scalar.MetadataScalarBase;
-import ecologylab.semantics.metadata.scalar.MetadataString;
 
 /**
  * Maps an exif (metadata) tag with a S.IM.PL Metadata field in a S.IM.PL Metadata object.

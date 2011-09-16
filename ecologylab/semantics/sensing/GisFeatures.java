@@ -11,7 +11,6 @@ import ecologylab.net.ParsedURL;
 import ecologylab.semantics.collecting.SemanticsGlobalScope;
 import ecologylab.semantics.generated.library.gps.GisLocation;
 import ecologylab.semantics.generated.library.gps.PostalAddress;
-import ecologylab.semantics.generated.library.search.YahooGeoCode;
 import ecologylab.semantics.generated.library.search.YahooGeoCodeResult;
 import ecologylab.semantics.generated.library.search.YahooResult;
 import ecologylab.semantics.generated.library.search.YahooResultSet;
