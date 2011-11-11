@@ -36,6 +36,10 @@ public class GisFeatures extends Debug
 	public static final MetadataExifFeature	GPS_LONGITUDE_REF_FEATURE	= new MetadataExifFeature( "longitude_ref", GpsDirectory.TAG_GPS_LONGITUDE_REF);
 
 	public static final MetadataExifFeature	GPS_LONGITUDE_FEATURE			= new MetadataExifFeature( "longitude", GpsDirectory.TAG_GPS_LONGITUDE);
+	
+	public static final MetadataExifFeature	GPS_IMG_DIRECTION_REF_FEATURE		= new MetadataExifFeature( "direction_ref", GpsDirectory.TAG_GPS_IMG_DIRECTION_REF);
+	
+	public static final MetadataExifFeature	GPS_IMG_DIRECTION_FEATURE		= new MetadataExifFeature( "direction", GpsDirectory.TAG_GPS_IMG_DIRECTION);
 
 	public static final MetadataExifFeature	GPS_METADATA_FEATURES[]		= {
 																																		GPS_LATITUDE_FEATURE,
@@ -43,10 +47,12 @@ public class GisFeatures extends Debug
 																																		GPS_LONGITUDE_REF_FEATURE,
 																																		GPS_LATITUDE_REF_FEATURE,
 																																		GPS_ALTITUDE_FEATURE,
+																																		GPS_IMG_DIRECTION_FEATURE,
+																																		GPS_IMG_DIRECTION_REF_FEATURE,
 																																		new MetadataExifFeature("satellites", GpsDirectory.TAG_GPS_SATELLITES),
 																																		};
 
-	double																	latitude, longitude, altitude;
+	double																	latitude, longitude, altitude, direction;
 
 
 
@@ -66,6 +72,10 @@ public class GisFeatures extends Debug
 		String altitudeString 		= GPS_ALTITUDE_FEATURE.getStringValue(gpsDir);
 		if (altitudeString != null)
 			altitude								= DoubleType.rationalToDouble(altitudeString);
+		
+		String directionString		= GPS_IMG_DIRECTION_FEATURE.getStringValue(gpsDir);
+		if (directionString != null)
+			direction								= DoubleType.rationalToDouble(directionString);
 	}
 
 	private double convertToDegrees(String stringDMS)
@@ -118,6 +128,7 @@ public class GisFeatures extends Debug
 		result.setLongitude(longitude);
 		result.setLatitude(latitude);
 		result.setAltitude(altitude);
+		result.setDirection(direction);
 	}
 	
 	//TODO Reverse geo-code, to discover place!
