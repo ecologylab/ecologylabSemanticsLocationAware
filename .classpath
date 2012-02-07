@@ -6,5 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabGeneratedSemantics"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabSemantics"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/metadataExtractor"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ecologylabFundamentalSun"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
