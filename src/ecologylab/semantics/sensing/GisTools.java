@@ -4,7 +4,7 @@
 package ecologylab.semantics.sensing;
 
 import ecologylab.generic.Debug;
-import ecologylab.semantics.generated.library.gps.GisLocation;
+import ecologylab.semantics.generated.library.gis.GisLocation;
 import ecologylab.sensor.location.EarthData;
 
 /**
